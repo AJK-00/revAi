@@ -1,4 +1,4 @@
 {
-    "python-envs.pythonProjects": [],
-    "r.lsp.promptToInstall": false
+    "r.lsp.promptToInstall": false,
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }

@@ -1,17 +1,31 @@
 from repo_fetcher import fetch_repo_files
 from analyzer import analyze_code
 
-try:
-    repo_url = input("Enter GitHub repo URL: ")
+from website_fetcher import fetch_website_data
+from website_analyzer import analyze_website
 
-    code = fetch_repo_files(repo_url)
+import json
 
-    if not code:
-        print("No valid code files found.")
+def main():
+    user_input = input("Enter GitHub repo URL or Website URL: ").strip()
+
+    if "github.com" in user_input:
+        print("\nFetching repository data...")
+        repo_data = fetch_repo_files(user_input)
+
+        print("Analyzing repository...\n")
+        result = analyze_code(repo_data)
+
     else:
-        result = analyze_code(code)
-        print("\n=== ANALYSIS ===\n")
-        print(result)
+        print("\nFetching website data...")
+        site_data = fetch_website_data(user_input)
 
-except Exception as e:
-    print("Error occurred:", str(e))
+        print("Analyzing website...\n")
+        result = analyze_website(site_data)
+
+    print("\n=== ANALYSIS RESULT ===\n")
+    print(json.dumps(result, indent=4))
+
+
+if __name__ == "__main__":
+    main()
