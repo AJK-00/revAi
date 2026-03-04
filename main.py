@@ -1,30 +1,32 @@
 from repo_fetcher import fetch_repo_files
 from analyzer import analyze_code
 
-from website_fetcher import fetch_website_data
-from website_analyzer import analyze_website
-
-import json
-
 def main():
-    user_input = input("Enter GitHub repo URL or Website URL: ").strip()
+    repo_url = input("Enter GitHub repository URL: ").strip()
 
-    if "github.com" in user_input:
-        print("\nFetching repository data...")
-        repo_data = fetch_repo_files(user_input)
+    print("\nFetching repository data...")
+    repo_data = fetch_repo_files(repo_url)
 
-        print("Analyzing repository...\n")
-        result = analyze_code(repo_data)
+    if not repo_data:
+        print("Failed to fetch repository data.")
+        return
 
-    else:
-        print("\nFetching website data...")
-        site_data = fetch_website_data(user_input)
+    print("\nRepository loaded successfully.")
+    print("You can now ask questions about this repository.")
+    print("Type 'exit' to quit.\n")
 
-        print("Analyzing website...\n")
-        result = analyze_website(site_data)
+    while True:
+        user_prompt = input(">>> ").strip()
 
-    print("\n=== ANALYSIS RESULT ===\n")
-    print(json.dumps(result, indent=4))
+        if user_prompt.lower() == "exit":
+            print("Exiting workspace.")
+            break
+
+        print("\nAnalyzing...\n")
+        result = analyze_code(repo_data, user_prompt)
+
+        print(result)
+        print("\n" + "-" * 80 + "\n")
 
 
 if __name__ == "__main__":

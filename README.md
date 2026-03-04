@@ -1,14 +1,13 @@
-# revAi - AI-Powered Code & Website Analyzer
+# revAi - AI-Powered GitHub Repository Analyzer
 
-An intelligent analysis tool that leverages RAG (Retrieval-Augmented Generation) and LLMs to analyze GitHub repositories and websites, providing comprehensive insights into architecture, tech stack, and improvement suggestions.
+An intelligent analysis tool that leverages RAG (Retrieval-Augmented Generation) and LLMs to analyze GitHub repositories, providing comprehensive insights into architecture, tech stack, and improvement suggestions.
 
 ## 🚀 Features
 
 - **GitHub Repository Analysis**: Automatically fetches and analyzes repository structure, code, and documentation
-- **Website Technology Detection**: Analyzes websites to detect frontend/backend technologies, frameworks, and security practices
 - **RAG-Powered Intelligence**: Uses semantic search with FAISS and sentence transformers for accurate context retrieval
 - **LLM Integration**: Powered by Groq's Llama 3.1 for intelligent analysis and recommendations
-- **Dual Analysis Mode**: Supports both GitHub repos and live websites
+- **Interactive Q&A**: Ask questions about the repository after loading
 
 ## 🛠️ Tech Stack
 
@@ -16,8 +15,6 @@ An intelligent analysis tool that leverages RAG (Retrieval-Augmented Generation)
 - **OpenAI SDK** (Groq API)
 - **FAISS** - Vector similarity search
 - **Sentence Transformers** - Text embeddings
-- **Playwright** - Web scraping with JavaScript rendering
-- **BeautifulSoup4** - HTML parsing
 - **NumPy** - Numerical operations
 
 ## 📋 Prerequisites
@@ -30,7 +27,7 @@ An intelligent analysis tool that leverages RAG (Retrieval-Augmented Generation)
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/revAi.git
+git clone https://github.com/AJK-00/revAi.git
 cd revAi
 ```
 
@@ -39,12 +36,7 @@ cd revAi
 pip install -r requirements.txt
 ```
 
-3. Install Playwright browsers:
-```bash
-python -m playwright install
-```
-
-4. Create a `.env` file:
+3. Create a `.env` file:
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 GITHUB_TOKEN=your_github_token_here
@@ -57,37 +49,24 @@ Run the main script:
 python main.py
 ```
 
-Enter either:
-- A GitHub repository URL (e.g., `https://github.com/user/repo`)
-- A website URL (e.g., `https://example.com`)
+Enter a GitHub repository URL (e.g., `https://github.com/user/repo`)
 
-The tool will automatically detect the input type and perform the appropriate analysis.
+The tool will load the repository and allow you to ask questions about it.
 
 ## 📊 Output
 
-### For GitHub Repositories:
 - Project summary
 - Tech stack identification
 - Architecture type
 - Core features
 - Improvement suggestions
-
-### For Websites:
-- Site purpose
-- Detected technologies
-- Frontend framework
-- Backend inference
-- SEO quality assessment
-- Security observations
-- Improvement recommendations
+- Custom queries about the codebase
 
 ## 🏗️ Architecture
 
 - **repo_fetcher.py**: Fetches GitHub repository data via GitHub API
-- **website_fetcher.py**: Scrapes website data using Playwright
 - **rag_engine.py**: Implements RAG pipeline with chunking, embedding, and retrieval
 - **analyzer.py**: Analyzes code repositories using LLM
-- **website_analyzer.py**: Analyzes websites using LLM
 - **main.py**: Entry point and orchestration
 
 ## 🤝 Contributing
@@ -100,4 +79,4 @@ MIT License
 
 ## 👤 Author
 
-Created with ❤️ by [Your Name]
+Created with ❤️ by AJK-00

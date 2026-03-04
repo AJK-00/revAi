@@ -1,5 +1,6 @@
 numpy
 faiss-cpu
 sentence-transformers
-beautifulsoup4
 requests
+python-dotenv
+openai
