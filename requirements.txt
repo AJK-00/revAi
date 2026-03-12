@@ -4,3 +4,5 @@ sentence-transformers
 requests
 python-dotenv
 openai
+fastapi
+uvicorn

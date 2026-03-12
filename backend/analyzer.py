@@ -52,6 +52,9 @@ Rules:
 - Do not assume external details.
 - If the answer is not available in context, clearly say so.
 - Provide technical and structured explanation.
+-When describing file structure, only mention files that explicitly appear in the repository context.
+-Do not infer additional folders or files.
+-If exact structure is unclear, describe at a high level without fabricating paths.
 
 Answer:
 """

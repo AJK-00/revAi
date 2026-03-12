@@ -3,7 +3,7 @@ import faiss
 from sentence_transformers import SentenceTransformer
 
 # Load embedding model once (important)
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+embedding_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
 def chunk_text(text, chunk_size=800):
     chunks = []
