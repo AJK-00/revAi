@@ -1,4 +1,3 @@
-from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import json
@@ -7,11 +6,10 @@ import re
 from rag_engine import chunk_text, embed_chunks, build_faiss_index, retrieve_relevant_chunks
 
 load_dotenv()
+import google.generativeai as genai
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.GenerativeModel("models/gemini-2.5-flash")  # or gemini-1.5-pro
 
-client = OpenAI(
-    api_key=os.getenv("GROQ_API_KEY"),
-    base_url="https://api.groq.com/openai/v1"
-)
 
 def analyze_code(repo_data, user_prompt):
     if not repo_data:
@@ -59,14 +57,11 @@ Rules:
 Answer:
 """
 
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[
-            {"role": "system", "content": "You analyze repositories accurately and technically."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.2,
-        max_tokens=1200
+    response = client.generate_content(
+        prompt,
+        generation_config=genai.types.GenerationConfig(
+            temperature=0.2,
+            max_output_tokens=8192,
+        )
     )
-
-    return response.choices[0].message.content.strip()
+    return response.text.strip()
