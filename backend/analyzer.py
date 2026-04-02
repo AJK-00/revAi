@@ -11,7 +11,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 client = genai.GenerativeModel("models/gemini-2.5-flash")  # or gemini-1.5-pro
 
 
-def analyze_code(repo_data, user_prompt):
+def analyze_code(repo_data, user_prompt, history=None):
     if not repo_data:
         return "No repository data found."
 
@@ -35,6 +35,10 @@ def analyze_code(repo_data, user_prompt):
     )
 
     context = "\n\n".join(relevant_chunks)
+    history_text = ""
+    if history:
+        for turn in history[-4:]:  # last 4 turns
+            history_text += f"User: {turn['user']}\nAssistant: {turn['assistant']}\n\n"
 
     # 🔥 Dynamic Prompt
     prompt = f"""
@@ -42,6 +46,12 @@ You are a senior software engineer analyzing a GitHub repository.
 
 User Question:
 {user_prompt}
+
+Previous conversation:
+{history_text}
+User Question:
+{user_prompt}
+
 
 Repository Context:
 {context}

@@ -1,0 +1,197 @@
+/* ── Chat Window ── */
+.chat-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  scroll-behavior: smooth;
+}
+
+.chat-window::-webkit-scrollbar { width: 5px; }
+.chat-window::-webkit-scrollbar-track { background: transparent; }
+.chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Message Row ── */
+.msg-row {
+  display: flex;
+  padding: 14px 24px;
+  gap: 14px;
+  animation: msgIn 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.msg-row:hover { background: rgba(255,255,255,0.015); }
+
+.msg-row.user-row  { flex-direction: row; }
+.msg-row.bot-row   { flex-direction: row; background: var(--bot-bubble); }
+.msg-row.bot-row:hover { background: #25211c; }
+
+/* ── Avatar ── */
+.msg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.avatar-user {
+  background: var(--surface-3);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  border: 1px solid var(--border-light);
+}
+
+.avatar-bot {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  border: 1px solid rgba(200,150,90,0.2);
+}
+
+/* ── Message Content ── */
+.msg-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.msg-sender {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+  font-family: var(--font-mono);
+}
+
+.user-row .msg-sender { color: var(--accent); opacity: 0.8; }
+
+/* ── Markdown-rendered text ── */
+.msg-body {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--text-primary);
+}
+
+.msg-body p {
+  margin-bottom: 10px;
+}
+.msg-body p:last-child { margin-bottom: 0; }
+
+.msg-body strong { color: var(--text-primary); font-weight: 600; }
+.msg-body em { color: var(--text-secondary); font-style: italic; }
+
+/* Headings */
+.msg-body h1, .msg-body h2, .msg-body h3 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 14px 0 6px;
+  line-height: 1.3;
+}
+.msg-body h1 { font-size: 1.1rem; }
+.msg-body h2 { font-size: 1rem; }
+.msg-body h3 { font-size: 0.92rem; color: var(--accent); }
+
+/* Lists */
+.msg-body ul, .msg-body ol {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+.msg-body li { margin-bottom: 4px; }
+
+/* Inline code */
+.msg-body code {
+  background: var(--code-bg);
+  color: var(--accent-hover);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* Code blocks */
+.msg-body pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+.msg-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+/* Blockquote */
+.msg-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+  margin: 10px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Tables */
+.msg-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 0.85rem;
+}
+.msg-body th, .msg-body td {
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  text-align: left;
+}
+.msg-body th {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.msg-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+/* Horizontal rule */
+.msg-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 14px 0;
+}
+
+/* ── Loading dots ── */
+.typing-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 4px 0;
+}
+.typing-dots span {
+  width: 7px; height: 7px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  animation: blink 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.9); }
+  40%           { opacity: 1;   transform: scale(1.1); }
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
