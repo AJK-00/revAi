@@ -1,0 +1,73 @@
+/* ── Unified Input Box ── */
+.input-box-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-box-wrapper:focus-within {
+  border-color: var(--border-light);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.input-box-wrapper.input-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.input-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.55;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.input-textarea::placeholder { color: var(--text-muted); }
+
+.input-textarea::-webkit-scrollbar { width: 3px; }
+.input-textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.send-btn {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.send-btn svg { width: 15px; height: 15px; }
+
+.send-btn.send-active {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.send-btn.send-active:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.send-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
