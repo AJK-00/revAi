@@ -1,7 +1,8 @@
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
 
-/* ── Design Tokens ── */
+/* ══════════════════════════════════════════
+   DARK (default)
+══════════════════════════════════════════ */
 :root {
   --bg-primary:    #1a1714;
   --bg-secondary:  #1f1c19;
@@ -10,27 +11,52 @@
   --surface-3:     #353029;
   --border:        #3a342d;
   --border-light:  #443d35;
-
   --accent:        #c8965a;
   --accent-hover:  #d9a96e;
   --accent-glow:   rgba(200,150,90,0.13);
   --accent-dim:    rgba(200,150,90,0.07);
-
   --text-primary:  #ede8e0;
   --text-secondary:#b8afa4;
   --text-muted:    #6b6057;
-
   --danger:        #c0614a;
   --code-bg:       #16130f;
-
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --bot-row-bg:    rgba(0,0,0,0.10);
+  --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'DM Sans', system-ui, sans-serif;
-
   --sidebar-w: 240px;
   --top-bar-h: 54px;
 }
 
+/* ══════════════════════════════════════════
+   LIGHT
+══════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg-primary:    #f0ebe4;
+  --bg-secondary:  #f7f3ee;
+  --surface-1:     #ede7de;
+  --surface-2:     #e3dbd0;
+  --surface-3:     #d8cfc3;
+  --border:        #c5bbb0;
+  --border-light:  #b5a99c;
+  --accent:        #9b5e28;
+  --accent-hover:  #844f21;
+  --accent-glow:   rgba(155,94,40,0.12);
+  --accent-dim:    rgba(155,94,40,0.08);
+  --text-primary:  #261a0e;
+  --text-secondary:#5a4535;
+  --text-muted:    #9a8676;
+  --danger:        #b84030;
+  --code-bg:       #e8e0d5;
+  --bot-row-bg:    rgba(0,0,0,0.03);
+}
+
+/* ══════════════════════════════════════════
+   Global reset
+══════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { color-scheme: dark; }
+[data-theme="light"] { color-scheme: light; }
 
 body {
   background: var(--bg-primary);
@@ -38,118 +64,94 @@ body {
   font-family: var(--font-body);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* ── Shell ── */
 .app-shell { display: flex; height: 100vh; overflow: hidden; }
 
 .main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-  background: var(--bg-secondary);
-  min-width: 0;
+  flex: 1; display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+  background: var(--bg-secondary); min-width: 0;
+  transition: background 0.3s ease;
 }
 
 /* ── Top Bar ── */
 .top-bar {
   height: var(--top-bar-h);
-  display: flex;
-  align-items: center;
-  padding: 0 18px;
-  border-bottom: 1px solid var(--border);
-  gap: 10px;
-  flex-shrink: 0;
+  display: flex; align-items: center;
+  padding: 0 18px; border-bottom: 1px solid var(--border);
+  gap: 10px; flex-shrink: 0;
+  background: var(--bg-secondary);
 }
-
 .sidebar-toggle-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s, background 0.2s;
-  flex-shrink: 0;
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  padding: 6px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.2s, background 0.2s; flex-shrink: 0;
 }
 .sidebar-toggle-btn:hover { color: var(--text-primary); background: var(--surface-1); }
 
-/* Top-bar title: shows repo OR user greeting */
 .top-bar-session-name {
-  flex: 1;
-  font-size: 0.85rem;
-  font-weight: 500;
+  flex: 1; font-size: 0.85rem; font-weight: 500;
   color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
-/* When it's a user greeting, slightly bolder */
 .top-bar-greeting {
-  flex: 1;
-  font-size: 0.9rem;
-  font-weight: 600;
+  flex: 1; font-size: 0.9rem; font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
 .new-chat-icon-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  padding: 6px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
   transition: color 0.2s, background 0.2s;
 }
 .new-chat-icon-btn:hover { color: var(--accent); background: var(--accent-dim); }
 
-/* ── Bottom Bar (no hint) ── */
+/* ── Bottom Bar ── */
 .bottom-bar {
-  padding: 12px 20px 16px;
+  padding: 10px 20px 16px;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
+  background: var(--bg-secondary);
 }
 
 /* ── Welcome screen ── */
 .welcome-screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0; padding: 40px 20px;
   animation: fadeUp 0.5s ease;
 }
-
-.welcome-icon { font-size: 2rem; color: var(--accent); opacity: 0.6; }
-
-.welcome-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
+.welcome-logo {
+  font-size: 2.4rem; color: var(--accent);
+  margin-bottom: 16px;
+  animation: spin 8s linear infinite;
 }
-
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.welcome-heading {
+  font-size: 2rem; font-weight: 700; color: var(--text-primary);
+  margin-bottom: 6px; text-align: center;
+}
 .welcome-sub {
-  font-size: 0.83rem;
-  color: var(--text-muted);
-  text-align: center;
-  max-width: 300px;
-  line-height: 1.65;
+  font-size: 0.88rem; color: var(--text-muted);
+  margin-bottom: 36px; text-align: center;
 }
+.welcome-chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 600px; }
+.welcome-chip {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 20px; padding: 9px 18px;
+  font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-body);
+}
+.welcome-chip:hover { background: var(--surface-2); border-color: var(--border-light); color: var(--text-primary); }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }

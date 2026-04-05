@@ -43,3 +43,9 @@ Thumbs.db
 
 # Playwright
 .playwright/
+
+backend/.env
+frontend/.env
+venv/
+__pycache__/
+uploaded_files/

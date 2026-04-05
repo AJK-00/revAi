@@ -12,7 +12,15 @@ function ChatWindow({ messages, loading, userName }) {
   return (
     <div className="chat-window">
       {messages.map((msg, i) => (
-        <MessageBubble key={i} sender={msg.sender} text={msg.text} userName={userName} />
+        <MessageBubble
+          key={i}
+          sender={msg.sender}
+          text={msg.text}
+          userName={userName}
+          sources={msg.sources || []}
+          source={msg.source || null}
+          imagePreview={msg.imagePreview || null}
+        />
       ))}
       {loading && <MessageBubble sender="bot" loading />}
       <div ref={bottomRef} />

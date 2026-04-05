@@ -1,0 +1,1 @@
+Machine learning is a subset of AI. Neural networks are inspired by the brain. Deep learning uses multiple layers.

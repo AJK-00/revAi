@@ -3,36 +3,75 @@ import { upsertProfile, signOut } from "./supabaseDb";
 import "./SettingsModal.css";
 
 const NAV = [
-  {
-    id: "general", label: "General",
-    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-  },
-  {
-    id: "account", label: "Account",
-    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-  },
+  { id: "general",    label: "General",    icon: "⚙" },
+  { id: "appearance", label: "Appearance", icon: "🎨" },
+  { id: "account",    label: "Account",    icon: "👤" },
+  { id: "privacy",    label: "Privacy",    icon: "🔒" },
 ];
 
-function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
+const COLOR_MODES = [
+  { id: "light", label: "Light" },
+  { id: "auto",  label: "Auto"  },
+  { id: "dark",  label: "Dark"  },
+];
+
+const FONTS = [
+  { id: "default",  label: "Default",           family: "'DM Sans', system-ui, sans-serif"      },
+  { id: "sans",     label: "Sans",              family: "'Inter', 'Helvetica Neue', sans-serif"  },
+  { id: "mono",     label: "Mono",              family: "'JetBrains Mono', monospace"            },
+  { id: "dyslexic", label: "Dyslexia-friendly", family: "'Comic Sans MS', cursive, sans-serif"  },
+];
+
+export default function SettingsModal({
+  user, profile, onClose, onProfileUpdate,
+  appearance, onAppearanceChange, messages = [], activeSessionTitle = "",
+}) {
   const [tab, setTab]           = useState("general");
   const [displayName, setName]  = useState(profile?.display_name || "");
   const [bio, setBio]           = useState(profile?.bio || "");
   const [saving, setSaving]     = useState(false);
-  const [msg, setMsg]           = useState(null); // {type:'success'|'error', text}
-  const fileRef                 = useRef(null);
+  const [msg, setMsg]           = useState(null);
+  const fileRef = useRef(null);
+
+  const [colorMode, setColorMode] = useState(appearance?.colorMode || "dark");
+  const [fontId, setFontId]       = useState(appearance?.fontId    || "default");
 
   useEffect(() => {
     setName(profile?.display_name || "");
     setBio(profile?.bio || "");
   }, [profile]);
 
-  // Close on Escape
   useEffect(() => {
     const h = e => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", h);
     return () => document.removeEventListener("keydown", h);
   }, [onClose]);
 
+  // ── Apply appearance immediately ──
+  function applyColorMode(mode) {
+    setColorMode(mode);
+    const next = { colorMode: mode, fontId };
+    onAppearanceChange?.(next);
+    localStorage.setItem("revai_appearance", JSON.stringify(next));
+    const root = document.documentElement;
+    if (mode === "auto") {
+      const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      root.setAttribute("data-theme", dark ? "dark" : "light");
+    } else {
+      root.setAttribute("data-theme", mode);
+    }
+  }
+
+  function applyFont(id) {
+    setFontId(id);
+    const next = { colorMode, fontId: id };
+    onAppearanceChange?.(next);
+    localStorage.setItem("revai_appearance", JSON.stringify(next));
+    const fam = FONTS.find(f => f.id === id)?.family || FONTS[0].family;
+    document.documentElement.style.setProperty("--font-body", fam);
+  }
+
+  // ── Save profile ──
   async function handleSaveGeneral() {
     setSaving(true); setMsg(null);
     try {
@@ -41,12 +80,41 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
         bio: bio.trim(),
       });
       onProfileUpdate(updated);
-      setMsg({ type: "success", text: "Profile saved." });
+      setMsg({ type: "success", text: "Profile saved successfully." });
     } catch (e) {
       setMsg({ type: "error", text: e.message });
-    } finally {
-      setSaving(false);
+    } finally { setSaving(false); }
+  }
+
+  // ── Export chat (from messages prop) ──
+  function exportChat(format) {
+    if (!messages.length) {
+      setMsg({ type: "error", text: "No messages to export in the current chat." });
+      return;
     }
+    const title = activeSessionTitle || "revai-chat";
+    let content = "";
+
+    if (format === "md") {
+      content = `# ${title}\n\n` + messages.map(m =>
+        `**${m.sender === "user" ? "You" : "revAi"}**\n\n${m.text}`
+      ).join("\n\n---\n\n");
+    } else if (format === "txt") {
+      content = messages.map(m =>
+        `[${m.sender === "user" ? "You" : "revAi"}]\n${m.text}`
+      ).join("\n\n---\n\n");
+    } else {
+      content = JSON.stringify({ title, messages }, null, 2);
+    }
+
+    const ext  = format === "json" ? "json" : format === "md" ? "md" : "txt";
+    const mime = format === "json" ? "application/json" : "text/plain";
+    const blob = new Blob([content], { type: mime });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = `${title}.${ext}`; a.click();
+    URL.revokeObjectURL(url);
+    setMsg({ type: "success", text: `Exported as ${ext.toUpperCase()}.` });
   }
 
   async function handleSignOut() {
@@ -54,8 +122,8 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
     onClose();
   }
 
-  const initials    = (profile?.display_name || user?.email || "U").slice(0, 2).toUpperCase();
-  const email       = user?.email || "";
+  const initials = (profile?.display_name || user?.email || "U").slice(0, 2).toUpperCase();
+  const email    = user?.email || "";
 
   return (
     <div className="settings-overlay" onClick={onClose}>
@@ -65,46 +133,37 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
         <nav className="settings-nav">
           <div className="settings-nav-title">Settings</div>
           {NAV.map(n => (
-            <button
-              key={n.id}
+            <button key={n.id}
               className={`settings-nav-item ${tab === n.id ? "active" : ""}`}
-              onClick={() => { setTab(n.id); setMsg(null); }}
-            >
-              {n.icon}{n.label}
+              onClick={() => { setTab(n.id); setMsg(null); }}>
+              <span className="snav-icon">{n.icon}</span>
+              {n.label}
             </button>
           ))}
           <div style={{ flex: 1 }} />
           <button className="settings-nav-item danger" onClick={handleSignOut}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Sign out
+            <span className="snav-icon">↪</span>Sign out
           </button>
         </nav>
 
         {/* ── Right content ── */}
         <div className="settings-content">
 
-          {/* ── GENERAL ── */}
+          {/* ════ GENERAL ════ */}
           {tab === "general" && (
             <>
-              <div className="settings-section-title">Profile</div>
+              <h2 className="settings-section-title">Profile</h2>
 
-              {/* Avatar */}
               <div className="avatar-row">
-                <div className="avatar-large">
-                  {profile?.avatar_url
-                    ? <img src={profile.avatar_url} alt={displayName} />
-                    : initials}
-                </div>
+                <div className="avatar-large">{initials}</div>
                 <div className="avatar-actions">
-                  <button className="avatar-upload-btn" onClick={() => fileRef.current?.click()}>
+                  <button className="avatar-upload-btn"
+                    onClick={() => fileRef.current?.click()}>
                     Change photo
                   </button>
-                  <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
-                    onChange={() => setMsg({ type: "error", text: "Avatar upload requires Supabase Storage — coming soon." })}
+                  <input ref={fileRef} type="file" accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={() => setMsg({ type: "error", text: "Avatar upload via Supabase Storage — coming soon." })}
                   />
                 </div>
               </div>
@@ -112,12 +171,9 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
               <div className="settings-field-row">
                 <div className="settings-field">
                   <label>Display name</label>
-                  <input
-                    type="text"
-                    value={displayName}
+                  <input type="text" value={displayName}
                     onChange={e => setName(e.target.value)}
-                    placeholder="Your name"
-                  />
+                    placeholder="Your name" />
                 </div>
                 <div className="settings-field">
                   <label>Email</label>
@@ -127,40 +183,78 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
 
               <div className="settings-field">
                 <label>Bio (optional)</label>
-                <textarea
-                  value={bio}
-                  onChange={e => setBio(e.target.value)}
-                  placeholder="Tell us a bit about yourself…"
-                />
+                <textarea value={bio} onChange={e => setBio(e.target.value)}
+                  placeholder="Tell us a bit about yourself…" />
               </div>
 
               {msg && <div className={`settings-msg ${msg.type}`}>{msg.text}</div>}
-              <button className="settings-save-btn" onClick={handleSaveGeneral} disabled={saving}>
+              <button className="settings-save-btn"
+                onClick={handleSaveGeneral} disabled={saving}>
                 {saving ? "Saving…" : "Save changes"}
               </button>
             </>
           )}
 
-          {/* ── ACCOUNT ── */}
-          {tab === "account" && (
+          {/* ════ APPEARANCE ════ */}
+          {tab === "appearance" && (
             <>
-              <div className="settings-section-title">Account</div>
+              <h2 className="settings-section-title">Appearance</h2>
 
-              <div className="settings-group-label" style={{ fontSize: "0.9rem", fontWeight: 500, color: "var(--text-secondary)", marginBottom: 12 }}>
-                Signed in as
+              {/* Color mode */}
+              <div className="settings-group-label">Color mode</div>
+              <div className="appearance-cards">
+                {COLOR_MODES.map(m => (
+                  <button key={m.id}
+                    className={`appearance-card ${colorMode === m.id ? "selected" : ""}`}
+                    onClick={() => applyColorMode(m.id)}>
+                    <div className={`theme-preview theme-preview-${m.id}`}>
+                      <div className="tp-sidebar" />
+                      <div className="tp-main">
+                        <div className="tp-bar" />
+                        <div className="tp-bubble" />
+                        <div className="tp-dot" />
+                      </div>
+                    </div>
+                    <span className="appearance-label">{m.label}</span>
+                  </button>
+                ))}
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 16px",
-                background: "var(--surface-2)", borderRadius: 10, border: "1px solid var(--border)",
-                marginBottom: 24 }}>
+              <hr className="settings-divider" />
+
+              {/* Chat font */}
+              <div className="settings-group-label">Chat font</div>
+              <div className="font-cards">
+                {FONTS.map(f => (
+                  <button key={f.id}
+                    className={`font-card ${fontId === f.id ? "selected" : ""}`}
+                    style={{ fontFamily: f.family }}
+                    onClick={() => applyFont(f.id)}>
+                    <span className="font-sample">Aa</span>
+                    <span className="font-label" style={{ fontFamily: "var(--font-body)" }}>
+                      {f.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ════ ACCOUNT ════ */}
+          {tab === "account" && (
+            <>
+              <h2 className="settings-section-title">Account</h2>
+
+              {/* Signed-in card */}
+              <div className="account-card">
                 <div className="avatar-large" style={{ width: 40, height: 40, fontSize: "0.9rem" }}>
                   {initials}
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text-primary)" }}>
+                  <div className="account-name">
                     {profile?.display_name || email.split("@")[0]}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{email}</div>
+                  <div className="account-email">{email}</div>
                 </div>
               </div>
 
@@ -168,7 +262,7 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
 
               <div className="settings-group-label">Active sessions</div>
               <div className="session-row">
-                <div className="session-row-info">
+                <div>
                   <div className="session-row-device">This browser</div>
                   <div className="session-row-meta">Current session</div>
                 </div>
@@ -180,7 +274,7 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
               <div className="danger-zone">
                 <div className="danger-zone-title">Danger zone</div>
                 <div className="danger-zone-desc">
-                  Deleting your account is permanent. All your chats and data will be removed and cannot be recovered.
+                  Deleting your account is permanent. All chats and data will be removed.
                 </div>
                 <button className="danger-btn"
                   onClick={() => setMsg({ type: "error", text: "Contact support to delete your account." })}>
@@ -191,10 +285,78 @@ function SettingsModal({ user, profile, onClose, onProfileUpdate }) {
             </>
           )}
 
+          {/* ════ PRIVACY ════ */}
+          {tab === "privacy" && (
+            <>
+              <h2 className="settings-section-title">Privacy</h2>
+
+              <div className="privacy-info-card">
+                <span className="privacy-shield">🔒</span>
+                <div>
+                  <div className="privacy-heading">Your data is protected</div>
+                  <div className="privacy-sub">
+                    revAi uses Supabase with Row-Level Security. Only you can access
+                    your chats. Files you upload are processed in memory and not stored permanently.
+                  </div>
+                </div>
+              </div>
+
+              <hr className="settings-divider" />
+              <div className="settings-group-label">Privacy settings</div>
+
+              {/* Export data */}
+              <div className="privacy-row">
+                <div>
+                  <div className="privacy-row-label">Export data</div>
+                  <div className="privacy-row-sub">
+                    Download your current chat conversation.
+                  </div>
+                </div>
+                <div className="privacy-export-btns">
+                  <button className="privacy-action-btn" onClick={() => exportChat("md")}>
+                    Markdown
+                  </button>
+                  <button className="privacy-action-btn" onClick={() => exportChat("txt")}>
+                    Text
+                  </button>
+                  <button className="privacy-action-btn" onClick={() => exportChat("json")}>
+                    JSON
+                  </button>
+                </div>
+              </div>
+
+              <hr className="settings-divider" />
+
+              <div className="privacy-row">
+                <div>
+                  <div className="privacy-row-label">Conversation memory</div>
+                  <div className="privacy-row-sub">
+                    Older turns are automatically summarized to maintain context
+                    without hitting token limits.
+                  </div>
+                </div>
+                <span className="privacy-badge">Enabled</span>
+              </div>
+
+              <hr className="settings-divider" />
+
+              <div className="privacy-row">
+                <div>
+                  <div className="privacy-row-label">Session data</div>
+                  <div className="privacy-row-sub">
+                    Uploaded files are stored temporarily in memory and cleared when
+                    the server restarts. Chat history is saved to Supabase, encrypted at rest.
+                  </div>
+                </div>
+                <span className="privacy-badge">Secure</span>
+              </div>
+
+              {msg && <div className={`settings-msg ${msg.type}`} style={{ marginTop: 16 }}>{msg.text}</div>}
+            </>
+          )}
+
         </div>
       </div>
     </div>
   );
 }
-
-export default SettingsModal;

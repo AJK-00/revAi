@@ -1,73 +1,110 @@
-/* ── Unified Input Box ── */
+/* ── Input outer ── */
+.input-outer { display: flex; flex-direction: column; gap: 7px; position: relative; }
+
+/* ── File badge ── */
+.input-file-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; background: var(--accent-dim);
+  border: 1px solid rgba(200,150,90,0.3); border-radius: 20px; width: fit-content;
+}
+.input-file-icon { font-size: 0.85rem; flex-shrink: 0; }
+.input-file-name {
+  font-size: 0.73rem; font-family: var(--font-mono); color: var(--accent);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
+}
+.input-file-mode {
+  font-size: 0.63rem; font-family: var(--font-mono); color: var(--text-muted);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1px 7px; flex-shrink: 0;
+}
+
+/* ── Slash command palette ── */
+.slash-palette {
+  background: var(--surface-2); border: 1px solid var(--border-light);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  animation: dropIn 0.15s ease;
+}
+.slash-item {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px; background: none; border: none; cursor: pointer;
+  font-family: var(--font-body); text-align: left;
+  transition: background 0.12s;
+}
+.slash-item:hover,
+.slash-item.slash-selected { background: var(--surface-3); }
+.slash-icon { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
+.slash-cmd  { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); min-width: 80px; }
+.slash-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ── Attach dropdown ── */
+.input-dropdown {
+  position: absolute; bottom: calc(100% + 8px); left: 0;
+  background: var(--surface-2); border: 1px solid var(--border-light);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+  animation: dropIn 0.15s ease; z-index: 100; min-width: 220px;
+}
+.dropdown-item {
+  width: 100%; display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 16px; background: none; border: none; cursor: pointer;
+  font-family: var(--font-body); text-align: left; transition: background 0.15s;
+}
+.dropdown-item:hover { background: var(--surface-3); }
+.dropdown-item > span:first-child { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.dropdown-label { font-size: 0.83rem; color: var(--text-primary); font-weight: 500; }
+.dropdown-hint  { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+.dropdown-divider { height: 1px; background: var(--border); margin: 3px 0; }
+.disabled-item { opacity: 0.45; cursor: default; pointer-events: none; }
+
+/* ── Main input box ── */
 .input-box-wrapper {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 12px;
+  display: flex; align-items: flex-end; gap: 8px;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 14px; padding: 10px 12px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .input-box-wrapper:focus-within {
-  border-color: var(--border-light);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+  border-color: var(--border-light); box-shadow: 0 0 0 3px var(--accent-glow);
 }
+.input-box-wrapper.input-disabled { opacity: 0.5; pointer-events: none; }
 
-.input-box-wrapper.input-disabled {
-  opacity: 0.5;
-  pointer-events: none;
+/* ── + button ── */
+.plus-btn {
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s; padding: 0;
 }
+.plus-btn:hover,
+.plus-btn.plus-active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+.plus-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+/* ── Textarea ── */
 .input-textarea {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  resize: none;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  line-height: 1.55;
-  max-height: 160px;
-  overflow-y: auto;
+  flex: 1; background: transparent; border: none; outline: none; resize: none;
+  font-family: var(--font-body); font-size: 0.9rem; color: var(--text-primary);
+  line-height: 1.55; max-height: 160px; overflow-y: auto;
 }
-
 .input-textarea::placeholder { color: var(--text-muted); }
-
 .input-textarea::-webkit-scrollbar { width: 3px; }
 .input-textarea::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+/* ── Send button ── */
 .send-btn {
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border-radius: 8px;
-  border: none;
-  background: var(--surface-2);
-  color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  padding: 0;
+  width: 34px; height: 34px; flex-shrink: 0;
+  border-radius: 8px; border: none;
+  background: var(--surface-2); color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s; padding: 0;
 }
-
 .send-btn svg { width: 15px; height: 15px; }
+.send-btn.send-active { background: var(--accent); color: var(--bg-primary); }
+.send-btn.send-active:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.send-btn:disabled { cursor: not-allowed; opacity: 0.35; }
 
-.send-btn.send-active {
-  background: var(--accent);
-  color: var(--bg-primary);
-}
-
-.send-btn.send-active:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-}
-
-.send-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.35;
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

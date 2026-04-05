@@ -1,187 +1,208 @@
 /* ── Chat Window ── */
 .chat-window {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  flex: 1; overflow-y: auto;
+  padding: 32px 0;
+  display: flex; flex-direction: column; gap: 0;
   scroll-behavior: smooth;
 }
-
 .chat-window::-webkit-scrollbar { width: 5px; }
-.chat-window::-webkit-scrollbar-track { background: transparent; }
 .chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 /* ── Message Row ── */
 .msg-row {
-  display: flex;
-  padding: 14px 24px;
-  gap: 14px;
+  display: flex; padding: 16px 32px; gap: 16px;
   animation: msgIn 0.2s ease;
-  border-bottom: 1px solid transparent;
+  max-width: 900px; width: 100%; margin: 0 auto;
 }
-
-.msg-row:hover { background: rgba(255,255,255,0.015); }
-
-.msg-row.user-row  { flex-direction: row; }
-.msg-row.bot-row   { flex-direction: row; background: var(--bot-bubble); }
-.msg-row.bot-row:hover { background: #25211c; }
+/* Full-width background stripe for bot rows */
+.bot-row-wrap {
+  width: 100%;
+  background: var(--bot-row-bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.user-row-wrap { width: 100%; }
 
 /* ── Avatar ── */
 .msg-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 2px;
+  width: 30px; height: 30px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 700;
+  flex-shrink: 0; margin-top: 3px;
 }
-
 .avatar-user {
-  background: var(--surface-3);
-  color: var(--accent);
-  font-family: var(--font-mono);
-  border: 1px solid var(--border-light);
+  background: var(--surface-3); color: var(--accent);
+  font-family: var(--font-mono); border: 1px solid var(--border-light);
 }
-
 .avatar-bot {
-  background: var(--accent-dim);
-  color: var(--accent);
-  font-family: var(--font-mono);
-  border: 1px solid rgba(200,150,90,0.2);
+  background: var(--accent-dim); color: var(--accent);
+  font-family: var(--font-mono); border: 1px solid rgba(200,150,90,0.2);
 }
 
 /* ── Message Content ── */
-.msg-content {
-  flex: 1;
-  min-width: 0;
-}
+.msg-content { flex: 1; min-width: 0; }
 
 .msg-sender {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 5px;
+  font-size: 0.7rem; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.09em; margin-bottom: 7px;
   font-family: var(--font-mono);
 }
+.user-row .msg-sender { color: var(--accent); opacity: 0.85; }
 
-.user-row .msg-sender { color: var(--accent); opacity: 0.8; }
-
-/* ── Markdown-rendered text ── */
-.msg-body {
-  font-size: 0.9rem;
-  line-height: 1.75;
-  color: var(--text-primary);
+/* ── Image preview ── */
+.msg-image {
+  max-width: 320px; max-height: 220px;
+  border-radius: 8px; object-fit: cover;
+  border: 1px solid var(--border);
+  margin-bottom: 10px; display: block;
 }
 
+/* ════════════════════════════════════
+   MSG BODY — clean, organized text
+════════════════════════════════════ */
+.msg-body {
+  font-size: 0.935rem;
+  line-height: 1.78;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  word-break: break-word;
+}
+
+/* Paragraphs */
 .msg-body p {
-  margin-bottom: 10px;
+  margin: 0 0 10px 0;
 }
 .msg-body p:last-child { margin-bottom: 0; }
 
-.msg-body strong { color: var(--text-primary); font-weight: 600; }
-.msg-body em { color: var(--text-secondary); font-style: italic; }
-
-/* Headings */
-.msg-body h1, .msg-body h2, .msg-body h3 {
+/* ── Headings ── */
+.msg-body h1 {
+  font-size: 1.15rem; font-weight: 700;
   color: var(--text-primary);
-  font-weight: 600;
-  margin: 14px 0 6px;
-  line-height: 1.3;
+  margin: 18px 0 8px; line-height: 1.3;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
 }
-.msg-body h1 { font-size: 1.1rem; }
-.msg-body h2 { font-size: 1rem; }
-.msg-body h3 { font-size: 0.92rem; color: var(--accent); }
-
-/* Lists */
-.msg-body ul, .msg-body ol {
-  padding-left: 20px;
-  margin-bottom: 10px;
+.msg-body h2 {
+  font-size: 1rem; font-weight: 600;
+  color: var(--text-primary);
+  margin: 16px 0 6px; line-height: 1.35;
 }
-.msg-body li { margin-bottom: 4px; }
+.msg-body h3 {
+  font-size: 0.92rem; font-weight: 600;
+  color: var(--accent);
+  margin: 14px 0 5px; line-height: 1.35;
+}
 
-/* Inline code */
+/* ── Lists — fixed indentation and spacing ── */
+.msg-body ul,
+.msg-body ol {
+  margin: 6px 0 12px 0;
+  padding-left: 22px;
+}
+.msg-body ul { list-style-type: disc; }
+.msg-body ol { list-style-type: decimal; }
+
+.msg-body li {
+  margin-bottom: 5px;
+  line-height: 1.65;
+  padding-left: 4px;
+}
+.msg-body li:last-child { margin-bottom: 0; }
+
+/* Nested lists */
+.msg-body li ul,
+.msg-body li ol {
+  margin: 4px 0 4px 0;
+}
+
+/* ── Inline code ── */
 .msg-body code {
   background: var(--code-bg);
   color: var(--accent-hover);
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 0.83rem;
+  padding: 2px 7px;
+  border-radius: 5px;
   border: 1px solid var(--border);
+  white-space: nowrap;
 }
 
-/* Code blocks */
+/* ── Code blocks ── */
 .msg-body pre {
   background: var(--code-bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
+  border-radius: 10px;
+  padding: 16px 18px;
   overflow-x: auto;
-  margin: 10px 0;
+  margin: 12px 0;
 }
 .msg-body pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 0.82rem;
+  background: none; border: none;
+  padding: 0; font-size: 0.84rem;
   color: var(--text-primary);
+  white-space: pre;
 }
 
-/* Blockquote */
+/* ── Blockquote ── */
 .msg-body blockquote {
   border-left: 3px solid var(--accent);
-  padding-left: 14px;
+  padding: 4px 0 4px 14px;
   margin: 10px 0;
   color: var(--text-secondary);
   font-style: italic;
 }
 
-/* Tables */
+/* ── Tables ── */
 .msg-body table {
   border-collapse: collapse;
-  width: 100%;
-  margin: 10px 0;
-  font-size: 0.85rem;
+  width: 100%; margin: 12px 0; font-size: 0.875rem;
 }
 .msg-body th, .msg-body td {
   border: 1px solid var(--border);
-  padding: 7px 12px;
-  text-align: left;
+  padding: 8px 14px; text-align: left;
 }
 .msg-body th {
-  background: var(--surface-2);
+  background: var(--surface-2); font-weight: 600;
   color: var(--text-secondary);
-  font-weight: 600;
 }
 .msg-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
 
-/* Horizontal rule */
-.msg-body hr {
-  border: none;
+/* ── Horizontal rule ── */
+.msg-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* ── Bold / italic ── */
+.msg-body strong { font-weight: 600; color: var(--text-primary); }
+.msg-body em     { font-style: italic; color: var(--text-secondary); }
+
+/* ── Source citations ── */
+.msg-sources {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-top: 14px; padding-top: 10px;
   border-top: 1px solid var(--border);
-  margin: 14px 0;
+}
+.source-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 20px; font-size: 0.72rem; color: var(--text-secondary);
+  text-decoration: none; transition: background 0.15s, color 0.15s;
+  max-width: 200px;
+}
+.source-chip:hover { background: var(--surface-3); color: var(--accent); }
+.source-favicon { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+.source-domain  { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.source-mode-label {
+  font-size: 0.68rem; color: var(--text-muted);
+  font-family: var(--font-mono); margin-top: 7px; display: block;
 }
 
-/* ── Loading dots ── */
-.typing-dots {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  padding: 4px 0;
-}
+/* ── Typing dots ── */
+.typing-dots { display: flex; gap: 5px; align-items: center; padding: 6px 0; }
 .typing-dots span {
-  width: 7px; height: 7px;
-  background: var(--text-muted);
-  border-radius: 50%;
-  animation: blink 1.2s ease-in-out infinite;
+  width: 7px; height: 7px; background: var(--text-muted);
+  border-radius: 50%; animation: blink 1.2s ease-in-out infinite;
 }
 .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
 .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
@@ -190,7 +211,6 @@
   0%, 80%, 100% { opacity: 0.2; transform: scale(0.9); }
   40%           { opacity: 1;   transform: scale(1.1); }
 }
-
 @keyframes msgIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }

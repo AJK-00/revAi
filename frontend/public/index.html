@@ -25,6 +25,41 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <!--
+      ADD THIS SCRIPT inside <head> in your public/index.html
+      BEFORE any other script tags.
+      This applies the saved theme BEFORE React loads, preventing flash.
+    -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('revai_appearance');
+          var mode = 'dark';
+          if (saved) {
+            var parsed = JSON.parse(saved);
+            mode = parsed.colorMode || 'dark';
+          }
+          if (mode === 'auto') {
+            mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', mode);
+
+          // Also apply saved font
+          if (saved) {
+            var fontMap = {
+              default:  "'DM Sans', system-ui, sans-serif",
+              sans:     "'Inter', 'Helvetica Neue', sans-serif",
+              mono:     "'JetBrains Mono', monospace",
+              dyslexic: "'Comic Sans MS', cursive, sans-serif"
+            };
+            var fontId = JSON.parse(saved).fontId || 'default';
+            if (fontMap[fontId]) {
+              document.documentElement.style.setProperty('--font-body', fontMap[fontId]);
+            }
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
