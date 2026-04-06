@@ -277,6 +277,23 @@ export default function App() {
     const decoder = new TextDecoder();
     let fullText = ""; let source = null; let sources = [];
 
+    // Updater functions defined outside the loop to satisfy no-loop-func
+    const updateStreamText = (txt) => {
+      setMessages(prev => {
+        const u = [...prev];
+        u[u.length - 1] = { ...u[u.length - 1], text: txt };
+        return u;
+      });
+    };
+
+    const finalizeStream = (txt, src, srcs) => {
+      setMessages(prev => {
+        const u = [...prev];
+        u[u.length - 1] = { sender: "bot", text: txt, source: src, sources: srcs, streaming: false };
+        return u;
+      });
+    };
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -287,20 +304,12 @@ export default function App() {
           const data = JSON.parse(line.slice(6));
           if (data.type === "text") {
             fullText += data.content;
-            setMessages(prev => {
-              const u = [...prev];
-              u[u.length - 1] = { ...u[u.length - 1], text: fullText };
-              return u;
-            });
+            updateStreamText(fullText);
           } else if (data.type === "done") {
             source = data.source; sources = data.sources || [];
-            setMessages(prev => {
-              const u = [...prev];
-              u[u.length - 1] = { sender: "bot", text: fullText, source, sources, streaming: false };
-              return u;
-            });
+            finalizeStream(fullText, source, sources);
           }
-        } catch (_) {}
+        } catch (_) {} // eslint-disable-line no-empty
       }
     }
 

@@ -10,13 +10,15 @@ function parseMarkdown(text) {
   if (!text) return "";
 
   // 1. Extract code blocks first (protect from further processing)
+  // Use a safe string placeholder instead of control characters
+  const PLACEHOLDER = "CODEBLOCK_PLACEHOLDER_";
   const codeBlocks = [];
   let html = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
     const i = codeBlocks.length;
     codeBlocks.push(
       `<pre><code class="lang-${lang || "text"}">${escHtml(code.trim())}</code></pre>`
     );
-    return `\x00CB${i}\x00`;
+    return `${PLACEHOLDER}${i}__`;
   });
 
   // 2. Escape remaining HTML
@@ -47,9 +49,9 @@ function parseMarkdown(text) {
     const line = rawLine;
 
     // Restore code blocks
-    if (/^\x00CB\d+\x00$/.test(line.trim())) {
+    if (line.trim().startsWith(PLACEHOLDER) && line.trim().endsWith("__")) {
       closeLists();
-      const idx = parseInt(line.match(/(\d+)/)[1]);
+      const idx = parseInt(line.trim().replace(PLACEHOLDER, "").replace("__", ""), 10);
       output.push(codeBlocks[idx]);
       continue;
     }
@@ -86,7 +88,7 @@ function parseMarkdown(text) {
     }
 
     // Unordered list item: *, -, or •
-    const ulMatch = line.match(/^[\*\-•] (.+)$/);
+    const ulMatch = line.match(/^[*\-•] (.+)$/);
     if (ulMatch) {
       closeOl();
       if (!ulOpen) { output.push("<ul>"); ulOpen = true; }
@@ -119,7 +121,7 @@ function parseMarkdown(text) {
   // Restore code blocks
   let result = output.join("\n");
   codeBlocks.forEach((block, i) => {
-    result = result.replace(`\x00CB${i}\x00`, block);
+    result = result.replace(`${PLACEHOLDER}${i}__`, block);
   });
 
   return result;
