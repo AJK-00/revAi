@@ -46,7 +46,7 @@ function parseMarkdown(text) {
   function closeLists() { closeUl(); closeOl(); }
 
   for (const rawLine of lines) {
-    const line = rawLine;
+    const line = rawLine.trimStart(); // trim leading spaces so "  * item" works
 
     // Restore code blocks
     if (line.trim().startsWith(PLACEHOLDER) && line.trim().endsWith("__")) {
