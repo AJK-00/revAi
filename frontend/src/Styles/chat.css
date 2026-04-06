@@ -1,65 +1,93 @@
 /* ── Chat Window ── */
 .chat-window {
-  flex: 1; overflow-y: auto;
-  padding: 32px 0;
-  display: flex; flex-direction: column; gap: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   scroll-behavior: smooth;
 }
 .chat-window::-webkit-scrollbar { width: 5px; }
 .chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-/* ── Message Row ── */
-.msg-row {
-  display: flex; padding: 16px 32px; gap: 16px;
-  animation: msgIn 0.2s ease;
-  max-width: 900px; width: 100%; margin: 0 auto;
-}
-/* Full-width background stripe for bot rows */
+/* ── Row wrappers (full width background) ── */
+.user-row-wrap,
 .bot-row-wrap {
   width: 100%;
+}
+.bot-row-wrap {
   background: var(--bot-row-bg);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
-.user-row-wrap { width: 100%; }
+
+/* ── Message Row — centered with max width ── */
+.msg-row {
+  display: flex;
+  gap: 14px;
+  padding: 16px 24px;
+  /* Center the content, not the row itself */
+  max-width: 760px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  animation: msgIn 0.2s ease;
+}
 
 /* ── Avatar ── */
 .msg-avatar {
-  width: 30px; height: 30px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.68rem; font-weight: 700;
-  flex-shrink: 0; margin-top: 3px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 3px;
 }
 .avatar-user {
-  background: var(--surface-3); color: var(--accent);
-  font-family: var(--font-mono); border: 1px solid var(--border-light);
+  background: var(--surface-3);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  border: 1px solid var(--border-light);
 }
 .avatar-bot {
-  background: var(--accent-dim); color: var(--accent);
-  font-family: var(--font-mono); border: 1px solid rgba(200,150,90,0.2);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  border: 1px solid rgba(200,150,90,0.2);
 }
 
 /* ── Message Content ── */
 .msg-content { flex: 1; min-width: 0; }
 
 .msg-sender {
-  font-size: 0.7rem; font-weight: 600;
-  color: var(--text-muted); text-transform: uppercase;
-  letter-spacing: 0.09em; margin-bottom: 7px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 7px;
   font-family: var(--font-mono);
 }
 .user-row .msg-sender { color: var(--accent); opacity: 0.85; }
 
 /* ── Image preview ── */
 .msg-image {
-  max-width: 320px; max-height: 220px;
-  border-radius: 8px; object-fit: cover;
+  max-width: 320px;
+  max-height: 220px;
+  border-radius: 8px;
+  object-fit: cover;
   border: 1px solid var(--border);
-  margin-bottom: 10px; display: block;
+  margin-bottom: 10px;
+  display: block;
 }
 
 /* ════════════════════════════════════
-   MSG BODY — clean, organized text
+   MSG BODY — clean organized text
 ════════════════════════════════════ */
 .msg-body {
   font-size: 0.935rem;
@@ -69,7 +97,6 @@
   word-break: break-word;
 }
 
-/* Paragraphs */
 .msg-body p {
   margin: 0 0 10px 0;
 }
@@ -79,9 +106,9 @@
 .msg-body h1 {
   font-size: 1.15rem; font-weight: 700;
   color: var(--text-primary);
-  margin: 18px 0 8px; line-height: 1.3;
+  margin: 18px 0 8px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
+  padding-bottom: 6px; line-height: 1.3;
 }
 .msg-body h2 {
   font-size: 1rem; font-weight: 600;
@@ -89,12 +116,12 @@
   margin: 16px 0 6px; line-height: 1.35;
 }
 .msg-body h3 {
-  font-size: 0.92rem; font-weight: 600;
+  font-size: 0.93rem; font-weight: 600;
   color: var(--accent);
   margin: 14px 0 5px; line-height: 1.35;
 }
 
-/* ── Lists — fixed indentation and spacing ── */
+/* ── Lists ── */
 .msg-body ul,
 .msg-body ol {
   margin: 6px 0 12px 0;
@@ -102,19 +129,14 @@
 }
 .msg-body ul { list-style-type: disc; }
 .msg-body ol { list-style-type: decimal; }
-
 .msg-body li {
   margin-bottom: 5px;
   line-height: 1.65;
-  padding-left: 4px;
+  padding-left: 3px;
 }
 .msg-body li:last-child { margin-bottom: 0; }
-
-/* Nested lists */
 .msg-body li ul,
-.msg-body li ol {
-  margin: 4px 0 4px 0;
-}
+.msg-body li ol { margin: 4px 0 4px 0; }
 
 /* ── Inline code ── */
 .msg-body code {
@@ -163,15 +185,13 @@
   padding: 8px 14px; text-align: left;
 }
 .msg-body th {
-  background: var(--surface-2); font-weight: 600;
-  color: var(--text-secondary);
+  background: var(--surface-2);
+  font-weight: 600; color: var(--text-secondary);
 }
 .msg-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
 
-/* ── Horizontal rule ── */
-.msg-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-
-/* ── Bold / italic ── */
+/* ── HR / Bold / Italic ── */
+.msg-body hr  { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
 .msg-body strong { font-weight: 600; color: var(--text-primary); }
 .msg-body em     { font-style: italic; color: var(--text-secondary); }
 
