@@ -2,63 +2,26 @@
 file_processor.py
 -----------------
 Parses uploaded files into clean text chunks.
+Linux-compatible — no python-magic, no Windows paths.
 
-Parser strategy:
-  PDF  → pdfplumber (text-based) → pytesseract OCR fallback (scanned/image)
+Parsers:
+  PDF  → pdfplumber (text) → pytesseract OCR (scanned PDF fallback)
   PPTX → python-pptx
   DOCX → python-docx
   XLSX → openpyxl
-  TXT/MD/CSV → built-in
-
-OCR requires:
-  pip install pytesseract pdf2image Pillow
-  + Tesseract installed at: C:/Program Files/Tesseract-OCR/tesseract.exe
-  + Poppler bin/ folder added to PATH (for pdf2image)
+  TXT/MD/CSV → built-in read
 """
 
 import os
-import pytesseract
+import sys
 from pathlib import Path
-import magic  # pip install python-magic-bin
 
-# ── Hardcoded paths — bypasses PATH issues entirely ──
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-os.environ["TESSDATA_PREFIX"] = r"C:\Program Files\tessdata"
-os.environ["PATH"] += r";C:\Program Files\Tesseract-OCR;C:\Program Files\poppler-25.12.0\Library\bin"
-UPLOAD_DIR = "uploaded_files"
+UPLOAD_DIR = "/tmp/revai_uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-SUPPORTED = {".pdf", ".pptx", ".ppt", ".docx", ".doc", ".txt", ".csv", ".md", ".xlsx"}
-CHUNK_SIZE = 1000   # characters per chunk
-OVERLAP    = 100    # overlap between chunks
-
-MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB hard limit
-
-ALLOWED_MIME_TYPES = {
-    "application/pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "text/plain", "text/csv", "text/markdown",
-}
-
-def validate_file(file_bytes: bytes, filename: str):
-    # 1. Size check
-    if len(file_bytes) > MAX_FILE_SIZE:
-        raise ValueError(f"File too large. Max 20 MB.")
-    
-    # 2. MIME type check — read actual bytes, don't trust the extension
-    detected = magic.from_buffer(file_bytes, mime=True)
-    if detected not in ALLOWED_MIME_TYPES:
-        raise ValueError(f"Blocked file type: {detected}")
-    
-    # 3. Filename sanitization — prevent path traversal
-    safe_name = os.path.basename(filename)
-    safe_name = "".join(c for c in safe_name if c.isalnum() or c in "._- ")
-    if not safe_name:
-        raise ValueError("Invalid filename.")
-    
-    return safe_name
+SUPPORTED  = {".pdf", ".pptx", ".ppt", ".docx", ".doc", ".txt", ".csv", ".md", ".xlsx"}
+CHUNK_SIZE = 1000
+OVERLAP    = 100
 
 
 # ─────────────────────────────────────────────
@@ -66,12 +29,10 @@ def validate_file(file_bytes: bytes, filename: str):
 # ─────────────────────────────────────────────
 
 def save_upload(file_bytes: bytes, filename: str) -> str:
-    """Save uploaded bytes to disk. Returns the saved file path."""
+    """Save uploaded bytes to disk. Returns the saved path."""
     ext = Path(filename).suffix.lower()
     if ext not in SUPPORTED:
-        raise ValueError(
-            f"Unsupported file type '{ext}'. Supported: {sorted(SUPPORTED)}"
-        )
+        raise ValueError(f"Unsupported file type '{ext}'. Supported: {sorted(SUPPORTED)}")
     path = os.path.join(UPLOAD_DIR, filename)
     with open(path, "wb") as f:
         f.write(file_bytes)
@@ -80,10 +41,7 @@ def save_upload(file_bytes: bytes, filename: str) -> str:
 
 
 def extract_text_chunks(file_path: str) -> list:
-    """
-    Parse a file and return a list of non-empty text chunk strings.
-    Automatically picks the right parser by file extension.
-    """
+    """Parse a file and return a list of text chunk strings."""
     ext = Path(file_path).suffix.lower()
     print(f"[file_processor] Parsing '{Path(file_path).name}' (ext={ext})")
 
@@ -98,28 +56,21 @@ def extract_text_chunks(file_path: str) -> list:
     elif ext in (".txt", ".md", ".csv"):
         raw = _parse_text(file_path)
     else:
-        raise ValueError(f"No parser available for extension: {ext}")
+        raise ValueError(f"No parser for extension: {ext}")
 
     chunks = _split_into_chunks(raw, CHUNK_SIZE, OVERLAP)
-    print(f"[file_processor] Done — {len(chunks)} chunks extracted.")
+    print(f"[file_processor] Done — {len(chunks)} chunks.")
     return chunks
 
 
 # ─────────────────────────────────────────────
-# PDF parser — text first, OCR fallback
+# PDF — text-first, OCR fallback
 # ─────────────────────────────────────────────
 
 def _parse_pdf(path: str) -> str:
-    """
-    1. Try pdfplumber to extract selectable text (fast, accurate).
-    2. If no text found (scanned/image PDF), fall back to OCR via
-       pdf2image + pytesseract (slower but works on any PDF).
-    """
     import pdfplumber
 
     pages_text = []
-
-    # ── Pass 1: pdfplumber ──────────────────────
     with pdfplumber.open(path) as pdf:
         for i, page in enumerate(pdf.pages):
             text = page.extract_text()
@@ -127,44 +78,36 @@ def _parse_pdf(path: str) -> str:
                 pages_text.append(f"[Page {i+1}]\n{text.strip()}")
 
     if pages_text:
-        print(f"[file_processor] PDF: extracted text from {len(pages_text)} pages via pdfplumber.")
+        print(f"[file_processor] PDF: {len(pages_text)} pages via pdfplumber.")
         return "\n\n".join(pages_text)
 
-    # ── Pass 2: OCR fallback ────────────────────
-    print("[file_processor] PDF has no selectable text — running OCR (this may take a moment)…")
+    # Scanned PDF — try OCR
+    print("[file_processor] No selectable text — attempting OCR...")
     return _ocr_pdf(path)
 
 
 def _ocr_pdf(path: str) -> str:
-    """Convert each PDF page to an image and run Tesseract OCR on it."""
+    """OCR fallback for scanned PDFs using pdf2image + pytesseract."""
     try:
+        import pytesseract
         from pdf2image import convert_from_path
-    except ImportError:
-        raise ImportError(
-            "pdf2image is required for scanned PDFs. "
-            "Run: pip install pdf2image\n"
-            "Also ensure Poppler bin/ is in your system PATH."
-        )
+        from PIL import Image  # noqa
+    except ImportError as e:
+        raise ImportError(f"OCR dependencies missing: {e}") from e
 
-    from PIL import Image
-
-    # convert_from_path needs Poppler on PATH
+    # On Railway/Linux, tesseract is at /usr/bin/tesseract (installed via nixpacks)
+    # No path override needed — pytesseract finds it automatically on Linux
     images = convert_from_path(path, dpi=200)
-    print(f"[file_processor] OCR: converted PDF to {len(images)} page image(s).")
+    print(f"[file_processor] OCR: {len(images)} page(s).")
 
     ocr_pages = []
     for i, img in enumerate(images):
-        # pytesseract reads the PIL image directly
-        text = pytesseract.image_to_string(img, lang="eng")
-        text = text.strip()
+        text = pytesseract.image_to_string(img, lang="eng").strip()
         if text:
             ocr_pages.append(f"[Page {i+1} — OCR]\n{text}")
-        print(f"[file_processor] OCR page {i+1}/{len(images)} done.")
 
     if not ocr_pages:
-        raise ValueError(
-            "OCR produced no text. The PDF may be corrupted or contain only non-text graphics."
-        )
+        raise ValueError("OCR produced no text. PDF may be image-only or corrupted.")
 
     return "\n\n".join(ocr_pages)
 
@@ -175,7 +118,7 @@ def _ocr_pdf(path: str) -> str:
 
 def _parse_pptx(path: str) -> str:
     from pptx import Presentation
-    prs = Presentation(path)
+    prs    = Presentation(path)
     slides = []
     for i, slide in enumerate(prs.slides, 1):
         texts = [
@@ -192,7 +135,7 @@ def _parse_pptx(path: str) -> str:
 
 def _parse_docx(path: str) -> str:
     from docx import Document
-    doc = Document(path)
+    doc   = Document(path)
     parts = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
     for table in doc.tables:
         for row in table.rows:
@@ -208,7 +151,7 @@ def _parse_docx(path: str) -> str:
 
 def _parse_xlsx(path: str) -> str:
     import openpyxl
-    wb = openpyxl.load_workbook(path, data_only=True)
+    wb   = openpyxl.load_workbook(path, data_only=True)
     rows = []
     for sheet in wb.worksheets:
         rows.append(f"[Sheet: {sheet.title}]")
@@ -234,12 +177,8 @@ def _parse_text(path: str) -> str:
 # ─────────────────────────────────────────────
 
 def _split_into_chunks(text: str, size: int, overlap: int) -> list:
-    """
-    Split text into chunks of `size` chars with `overlap` char overlap
-    so that context at chunk boundaries is not lost.
-    """
     chunks = []
-    start = 0
+    start  = 0
     while start < len(text):
         chunk = text[start : start + size].strip()
         if chunk:
