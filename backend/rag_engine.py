@@ -1,31 +1,58 @@
+"""
+rag_engine.py
+-------------
+Lightweight RAG using TF-IDF + cosine similarity.
+Replaces sentence-transformers (2GB+) with sklearn (tiny).
+"""
+
 import numpy as np
-import faiss
-from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-# Load embedding model once (important)
-embedding_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-def chunk_text(text, chunk_size=800):
+def chunk_text(text: str, chunk_size: int = 800) -> list:
     chunks = []
-    for i in range(0, len(text), chunk_size):
-        chunks.append(text[i:i + chunk_size])
+    overlap = 100
+    start = 0
+    while start < len(text):
+        chunk = text[start:start + chunk_size].strip()
+        if chunk:
+            chunks.append(chunk)
+        start += chunk_size - overlap
     return chunks
 
 
-def embed_chunks(chunks):
-    embeddings = embedding_model.encode(chunks)
-    return np.array(embeddings).astype("float32")
+def retrieve_relevant_chunks(query: str, chunks: list, top_k: int = 5) -> list:
+    """
+    TF-IDF based retrieval — no model download, works on any machine.
+    Returns the top_k most relevant chunks for the query.
+    """
+    if not chunks:
+        return []
 
+    top_k = min(top_k, len(chunks))
 
-def build_faiss_index(embeddings):
-    dimension = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dimension)
-    index.add(embeddings)
-    return index
+    try:
+        vectorizer = TfidfVectorizer(
+            stop_words="english",
+            ngram_range=(1, 2),
+            max_features=10000,
+        )
+        # Fit on all chunks + query together
+        all_texts   = chunks + [query]
+        tfidf_matrix = vectorizer.fit_transform(all_texts)
 
+        # Query vector is the last row
+        query_vec   = tfidf_matrix[-1]
+        chunk_vecs  = tfidf_matrix[:-1]
 
-def retrieve_relevant_chunks(query, chunks, index, top_k=5):
-    query_embedding = embedding_model.encode([query]).astype("float32")
-    distances, indices = index.search(query_embedding, top_k)
+        # Cosine similarity between query and each chunk
+        scores = cosine_similarity(query_vec, chunk_vecs).flatten()
 
-    return [chunks[i] for i in indices[0]]
+        # Return top_k chunks sorted by score
+        top_indices = np.argsort(scores)[::-1][:top_k]
+        return [chunks[i] for i in top_indices]
+
+    except Exception as e:
+        print(f"[rag_engine] Retrieval error: {e} — returning first {top_k} chunks")
+        return chunks[:top_k]
