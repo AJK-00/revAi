@@ -43,14 +43,16 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── CORS ─────────────────────────────────────────────────────
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+_raw = os.getenv("ALLOWED_ORIGINS", "*")
+ALLOWED_ORIGINS = ["*"] if _raw.strip() == "*" else [o.strip() for o in _raw.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # ── Session stores ───────────────────────────────────────────
