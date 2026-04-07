@@ -43,16 +43,15 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── CORS ─────────────────────────────────────────────────────
-_raw = os.getenv("ALLOWED_ORIGINS", "*")
-ALLOWED_ORIGINS = ["*"] if _raw.strip() == "*" else [o.strip() for o in _raw.split(",")]
-
+# CORS — allow all origins so OPTIONS preflight never fails
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
+    max_age=3600,
 )
 
 # ── Session stores ───────────────────────────────────────────
