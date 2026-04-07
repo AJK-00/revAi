@@ -25,7 +25,7 @@ import "./components/FileUploadModal.css";
 import "./App.css";
 
 const GITHUB_URL_RE = /https?:\/\/github\.com\/[\w.-]+\/[\w.-]+/i;
-const API           = "http://127.0.0.1:8000";
+const API = "https://revai.up.railway.app";
 
 const SUGGESTIONS = [
   { icon: "⬡", text: "Analyze a GitHub repo"          },
