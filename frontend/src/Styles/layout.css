@@ -4,23 +4,23 @@
    DARK (default)
 ══════════════════════════════════════════ */
 :root {
-  --bg-primary:    #1a1714;
-  --bg-secondary:  #1f1c19;
-  --surface-1:     #272320;
-  --surface-2:     #2e2a26;
-  --surface-3:     #353029;
-  --border:        #3a342d;
-  --border-light:  #443d35;
-  --accent:        #c8965a;
-  --accent-hover:  #d9a96e;
-  --accent-glow:   rgba(200,150,90,0.13);
-  --accent-dim:    rgba(200,150,90,0.07);
-  --text-primary:  #ede8e0;
-  --text-secondary:#b8afa4;
-  --text-muted:    #6b6057;
-  --danger:        #c0614a;
-  --code-bg:       #16130f;
-  --bot-row-bg:    rgba(0,0,0,0.10);
+  --bg-primary:    #0a0a0a;
+  --bg-secondary:  #111111;
+  --surface-1:     #1a1a1a;
+  --surface-2:     #212121;
+  --surface-3:     #2a2a2a;
+  --border:        #2e2e2e;
+  --border-light:  #3a3a3a;
+  --accent:        #e8e8e8;
+  --accent-hover:  #ffffff;
+  --accent-glow:   rgba(255,255,255,0.08);
+  --accent-dim:    rgba(255,255,255,0.05);
+  --text-primary:  #f0f0f0;
+  --text-secondary:#a0a0a0;
+  --text-muted:    #555555;
+  --danger:        #e05555;
+  --code-bg:       #0d0d0d;
+  --bot-row-bg:    rgba(255,255,255,0.02);
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'DM Sans', system-ui, sans-serif;
   --sidebar-w: 240px;
@@ -31,23 +31,23 @@
    LIGHT
 ══════════════════════════════════════════ */
 [data-theme="light"] {
-  --bg-primary:    #f0ebe4;
-  --bg-secondary:  #f7f3ee;
-  --surface-1:     #ede7de;
-  --surface-2:     #e3dbd0;
-  --surface-3:     #d8cfc3;
-  --border:        #c5bbb0;
-  --border-light:  #b5a99c;
-  --accent:        #9b5e28;
-  --accent-hover:  #844f21;
-  --accent-glow:   rgba(155,94,40,0.12);
-  --accent-dim:    rgba(155,94,40,0.08);
-  --text-primary:  #261a0e;
-  --text-secondary:#5a4535;
-  --text-muted:    #9a8676;
-  --danger:        #b84030;
-  --code-bg:       #e8e0d5;
-  --bot-row-bg:    rgba(0,0,0,0.03);
+  --bg-primary:    #ffffff;
+  --bg-secondary:  #f9f9f9;
+  --surface-1:     #f2f2f2;
+  --surface-2:     #ebebeb;
+  --surface-3:     #e2e2e2;
+  --border:        #d4d4d4;
+  --border-light:  #c4c4c4;
+  --accent:        #111111;
+  --accent-hover:  #000000;
+  --accent-glow:   rgba(0,0,0,0.08);
+  --accent-dim:    rgba(0,0,0,0.05);
+  --text-primary:  #111111;
+  --text-secondary:#555555;
+  --text-muted:    #999999;
+  --danger:        #d03030;
+  --code-bg:       #f4f4f4;
+  --bot-row-bg:    rgba(0,0,0,0.02);
 }
 
 /* ══════════════════════════════════════════
